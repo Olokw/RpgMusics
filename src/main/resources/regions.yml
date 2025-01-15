@@ -1,0 +1,8 @@
+example:
+  region-name: l1 # the name of the region
+  region-world: world # the world of the region
+  music: "custom:example" # name of the sound
+  loop-time: 2960 # time of the loop (in ticks)
+  volume: 1 # sound volume
+  pitch: 1 # sound pitch
+  

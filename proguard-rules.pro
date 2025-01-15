@@ -1,0 +1,10 @@
+-keep class org.bukkit.plugin.java.JavaPlugin { *; }
+-keepattributes *Annotation*
+-keep class net.olokw.** { *; } // Substitua pelo seu pacote principal
+-dontwarn javax.**
+-dontwarn org.yaml.**
+-dontwarn org.bukkit.**
+-dontwarn com.google.gson.**
+-dontnote
+-ignorewarnings
+-optimizations !code/simplification/arithmetic
