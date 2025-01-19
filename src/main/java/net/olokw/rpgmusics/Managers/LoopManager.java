@@ -7,6 +7,7 @@ import net.olokw.rpgmusics.RpgMusics;
 import net.olokw.rpgmusics.Utils.LoopConfig;
 import net.olokw.rpgmusics.Utils.MusicConfig;
 import net.olokw.rpgmusics.Utils.RegionConfig;
+import org.bukkit.Location;
 import org.bukkit.SoundCategory;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -54,21 +55,8 @@ public class LoopManager {
             public void run() {
                 if (loopConfig.getI() > 0){
                     boolean canContinue = false;
-                    for(ProtectedRegion r : Objects.requireNonNull(WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(player.getWorld()))).getApplicableRegions(BukkitAdapter.asBlockVector(player.getLocation()))){
-                        RegionConfig regionConfig1 = null;
-                        for (RegionConfig regionConfig : RpgMusics.instance.getRegionManager().regions){
-                            if (regionConfig.getRegion() == r){
-                                regionConfig1 = regionConfig;
-                            }
-                        }
-                        if (RpgMusics.instance.getRegionManager().regions.contains(r)){
-                            if (regionConfig1 != null){
-                                if (regionConfig1.getMusicConfigList().equals(loopConfig.getMusicConfigList())){
-                                    canContinue = true;
-                                }
-                            }
-                        }
-                    }
+                    RegionConfig region = getAnyMusicRegion(player.getLocation());
+                    if (region != null) canContinue = true;
                     int a = 0;
                     for (MusicConfig music : loopConfig.getMusicConfigList()){
                         if (!music.checkIfCanPlayAtTime(player.getWorld().getTime())){
@@ -127,5 +115,15 @@ public class LoopManager {
         }
     }
 
+    private RegionConfig getAnyMusicRegion(Location loc){
+        for (ProtectedRegion region : WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(loc.getWorld())).getApplicableRegions(BukkitAdapter.asBlockVector(loc))){
+            for (RegionConfig regionConfig : RpgMusics.instance.getRegionManager().regions){
+                if (regionConfig.getRegionName().equalsIgnoreCase(region.getId()) && regionConfig.getRegionWorld().equalsIgnoreCase(loc.getWorld().getName())){
+                    return regionConfig;
+                }
+            }
+        }
+        return null;
+    }
 
 }

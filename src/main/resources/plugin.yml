@@ -1,5 +1,5 @@
 name: RpgMusics
-version: '2.0.1'
+version: '2.0.2'
 main: net.olokw.rpgmusics.RpgMusics
 depend: [WorldGuard,WGRegionEvents]
 api-version: '1.18'
