@@ -116,14 +116,20 @@ public class LoopManager {
     }
 
     private RegionConfig getAnyMusicRegion(Location loc){
+        RegionConfig globalRegion = null;
         for (ProtectedRegion region : WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(loc.getWorld())).getApplicableRegions(BukkitAdapter.asBlockVector(loc))){
             for (RegionConfig regionConfig : RpgMusics.instance.getRegionManager().regions){
-                if (regionConfig.getRegionName().equalsIgnoreCase(region.getId()) && regionConfig.getRegionWorld().equalsIgnoreCase(loc.getWorld().getName())){
-                    return regionConfig;
+                if (regionConfig.getRegionWorld().equalsIgnoreCase(loc.getWorld().getName())){
+                    if (regionConfig.getRegionName().equalsIgnoreCase(region.getId())){
+                        return regionConfig;
+                    }
+                    if (regionConfig.getRegionName().equalsIgnoreCase("__global__")){
+                        globalRegion = regionConfig;
+                    }
                 }
             }
         }
-        return null;
+        return globalRegion;
     }
 
 }
