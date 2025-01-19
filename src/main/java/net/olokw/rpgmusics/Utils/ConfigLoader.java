@@ -47,11 +47,19 @@ public class ConfigLoader {
 
 
 
-                if (RpgMusics.instance.getRegionManager().regions.containsKey(regionConfig.getRegion())){
-                    RpgMusics.instance.getRegionManager().regions.get(regionConfig.getRegion()).addMusicConfig(musicConfig);
+                if (RpgMusics.instance.getRegionManager().regions.contains(regionConfig)){
+                    for (RegionConfig regionConfig1 : RpgMusics.instance.getRegionManager().regions){
+                        if (regionConfig1.getRegionName().equalsIgnoreCase(regionConfig.getRegionName()) && regionConfig1.getRegionWorld().equalsIgnoreCase(regionConfig.getRegionWorld())){
+                            regionConfig.addMusicConfig(musicConfig);
+                        }
+                    }
                 }else{
                     regionConfig.addMusicConfig(musicConfig);
-                    RpgMusics.instance.getRegionManager().add(regionConfig.getRegion(), regionConfig);
+                    if (regionConfig.getRegionName().equalsIgnoreCase("__global__")){
+                        RpgMusics.instance.getRegionManager().add(regionConfig);
+                    } else {
+                        RpgMusics.instance.getRegionManager().add(regionConfig);
+                    }
                 }
             }
         }else{

@@ -11,6 +11,8 @@ import de.netzkronehd.wgregionevents.events.RegionLeftEvent;
 import net.olokw.rpgmusics.RpgMusics;
 import net.olokw.rpgmusics.Utils.LoopConfig;
 import net.olokw.rpgmusics.Utils.RegionConfig;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.SoundCategory;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -28,8 +30,8 @@ public class RegionEvents implements Listener {
 
     @EventHandler
     public void onJoin(PlayerJoinEvent e) {
-        if (WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(e.getPlayer().getWorld())).getApplicableRegions(BukkitAdapter.asBlockVector(e.getPlayer().getLocation())).size() == 0){
-            for (RegionConfig regionConfig : RpgMusics.instance.getRegionManager().regions.values()){
+        if (getMusicRegion(e.getPlayer().getLocation()) == null){
+            for (RegionConfig regionConfig : RpgMusics.instance.getRegionManager().regions){
                 if (regionConfig.getRegionName().equalsIgnoreCase("__global__") && regionConfig.getRegionWorld().equalsIgnoreCase(e.getPlayer().getWorld().getName())){
                     tryPlayMusic(e.getPlayer(), regionConfig);
                     break;
@@ -47,44 +49,45 @@ public class RegionEvents implements Listener {
 
                 if (WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(e.getPlayer().getWorld())) == null) return;
 
-                ProtectedRegion region = WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(e.getPlayer().getWorld())).getRegions().values().stream().findFirst().get();
+                RegionConfig regionConfig = getMusicRegion(e.getPlayer().getLocation());
 
-                if (RpgMusics.instance.getRegionManager().regions.containsKey(region)) {
-                    RegionConfig regionConfig = RpgMusics.instance.getRegionManager().regions.get(region);
-                    tryPlayMusic(e.getPlayer(), regionConfig);
-                }
+                if (regionConfig != null) tryPlayMusic(e.getPlayer(), regionConfig);
 
             }
         }.runTaskLater(RpgMusics.instance, 1);
     }
 
     private void tryPlayMusic(Player p, RegionConfig regionConfig){
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                if (RpgMusics.instance.getLoopManager().tasks.containsKey(p.getUniqueId())) {
+                    LoopConfig currentLoopConfig = RpgMusics.instance.getLoopManager().tasks.get(p.getUniqueId());
 
-            if (RpgMusics.instance.getLoopManager().tasks.containsKey(p.getUniqueId())) {
-                LoopConfig currentLoopConfig = RpgMusics.instance.getLoopManager().tasks.get(p.getUniqueId());
+                    if (!new HashSet<>(currentLoopConfig.getMusicConfigList()).containsAll(regionConfig.getMusicConfigList())
+                            && regionConfig.getAvailableMusicsSize(p.getWorld().getTime()) > 0) {
 
-                if (!new HashSet<>(currentLoopConfig.getMusicConfigList()).containsAll(regionConfig.getMusicConfigList())
-                        && regionConfig.getAvailableMusicsSize(p.getWorld().getTime()) > 0) {
+                        if (!currentLoopConfig.getActualMusic().equals(regionConfig.getMusicConfigList().get(0).getMusicName())) {
+                            p.stopSound(currentLoopConfig.getActualMusic(), SoundCategory.RECORDS);
+                            RpgMusics.instance.getLoopManager().stopTimer(p);
+                            RpgMusics.instance.getLoopManager().tasks.remove(p.getUniqueId());
+                        }
+                    }
+                }
 
-                    if (!currentLoopConfig.getActualMusic().equals(regionConfig.getMusicConfigList().get(0).getMusicName())) {
-                        p.stopSound(currentLoopConfig.getActualMusic(), SoundCategory.RECORDS);
-                        RpgMusics.instance.getLoopManager().stopTimer(p);
-                        RpgMusics.instance.getLoopManager().tasks.remove(p.getUniqueId());
+                if (!RpgMusics.instance.getLoopManager().tasks.containsKey(p.getUniqueId())) {
+                    String currentMusic = RpgMusics.instance.getLoopManager().tasks.containsKey(p.getUniqueId())
+                            ? RpgMusics.instance.getLoopManager().tasks.get(p.getUniqueId()).getActualMusic()
+                            : null;
+
+                    String regionMusic = regionConfig.getMusicConfigList().get(0).getMusicName();
+
+                    if (!regionMusic.equals(currentMusic)) {
+                        RpgMusics.instance.getLoopManager().startTimer(p, regionConfig);
                     }
                 }
             }
-
-            if (!RpgMusics.instance.getLoopManager().tasks.containsKey(p.getUniqueId())) {
-                String currentMusic = RpgMusics.instance.getLoopManager().tasks.containsKey(p.getUniqueId())
-                        ? RpgMusics.instance.getLoopManager().tasks.get(p.getUniqueId()).getActualMusic()
-                        : null;
-
-                String regionMusic = regionConfig.getMusicConfigList().get(0).getMusicName();
-
-                if (!regionMusic.equals(currentMusic)) {
-                    RpgMusics.instance.getLoopManager().startTimer(p, regionConfig);
-                }
-            }
+        }.runTaskLater(RpgMusics.instance, 1);
 
     }
 
@@ -108,10 +111,22 @@ public class RegionEvents implements Listener {
         }
     }
 
+    private RegionConfig getMusicRegion(Location loc){
+        for (ProtectedRegion region : WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(loc.getWorld())).getApplicableRegions(BukkitAdapter.asBlockVector(loc))){
+            for (RegionConfig regionConfig : RpgMusics.instance.getRegionManager().regions){
+                if (regionConfig.getRegion() == region){
+                    return regionConfig;
+                }
+            }
+        }
+        return null;
+    }
+
     @EventHandler
     public void onTeleport(PlayerTeleportEvent e){
-        if (WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(e.getPlayer().getWorld())).getApplicableRegions(BukkitAdapter.asBlockVector(e.getPlayer().getLocation())).size() == 0){
-            for (RegionConfig regionConfig : RpgMusics.instance.getRegionManager().regions.values()){
+        if (!e.getFrom().getWorld().getName().equalsIgnoreCase(e.getTo().getWorld().getName())) return;
+        if (getMusicRegion(e.getTo()) == null){
+            for (RegionConfig regionConfig : RpgMusics.instance.getRegionManager().regions){
                 if (regionConfig.getRegionName().equalsIgnoreCase("__global__") && regionConfig.getRegionWorld().equalsIgnoreCase(e.getPlayer().getWorld().getName())){
                     tryPlayMusic(e.getPlayer(), regionConfig);
                     break;
@@ -121,9 +136,9 @@ public class RegionEvents implements Listener {
     }
 
     @EventHandler
-    public void onTeleport(RegionLeftEvent e){
-        if (WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(e.getPlayer().getWorld())).getApplicableRegions(BukkitAdapter.asBlockVector(e.getPlayer().getLocation())).size() == 0){
-            for (RegionConfig regionConfig : RpgMusics.instance.getRegionManager().regions.values()){
+    public void onTeleport(PlayerChangedWorldEvent e){
+        if (getMusicRegion(e.getPlayer().getLocation()) == null){
+            for (RegionConfig regionConfig : RpgMusics.instance.getRegionManager().regions){
                 if (regionConfig.getRegionName().equalsIgnoreCase("__global__") && regionConfig.getRegionWorld().equalsIgnoreCase(e.getPlayer().getWorld().getName())){
                     tryPlayMusic(e.getPlayer(), regionConfig);
                     break;
@@ -131,4 +146,5 @@ public class RegionEvents implements Listener {
             }
         }
     }
+
 }

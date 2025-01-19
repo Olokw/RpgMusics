@@ -55,10 +55,17 @@ public class LoopManager {
                 if (loopConfig.getI() > 0){
                     boolean canContinue = false;
                     for(ProtectedRegion r : Objects.requireNonNull(WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(player.getWorld()))).getApplicableRegions(BukkitAdapter.asBlockVector(player.getLocation()))){
-                        if (RpgMusics.instance.getRegionManager().regions.containsKey(r)){
-
-                            if (RpgMusics.instance.getRegionManager().regions.get(r).getMusicConfigList().equals(loopConfig.getMusicConfigList())){
-                                canContinue = true;
+                        RegionConfig regionConfig1 = null;
+                        for (RegionConfig regionConfig : RpgMusics.instance.getRegionManager().regions){
+                            if (regionConfig.getRegion() == r){
+                                regionConfig1 = regionConfig;
+                            }
+                        }
+                        if (RpgMusics.instance.getRegionManager().regions.contains(r)){
+                            if (regionConfig1 != null){
+                                if (regionConfig1.getMusicConfigList().equals(loopConfig.getMusicConfigList())){
+                                    canContinue = true;
+                                }
                             }
                         }
                     }

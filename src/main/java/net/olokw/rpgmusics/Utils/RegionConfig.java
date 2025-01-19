@@ -22,7 +22,11 @@ public class RegionConfig {
     }
 
     public ProtectedRegion getRegion(){
-        return WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(Bukkit.getWorld(regionWorld))).getRegion(regionName);
+        if (WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(Bukkit.getWorld(regionWorld))).hasRegion(regionName)){
+            return WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(Bukkit.getWorld(regionWorld))).getRegion(regionName);
+        } else {
+            return null;
+        }
     }
 
     public String getRegionName() {
