@@ -4,7 +4,6 @@ import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
-import com.sk89q.worldguard.protection.regions.RegionContainer;
 import net.olokw.rpgmusics.RpgMusics;
 import net.olokw.rpgmusics.Utils.LoopConfig;
 import net.olokw.rpgmusics.Utils.MusicConfig;
