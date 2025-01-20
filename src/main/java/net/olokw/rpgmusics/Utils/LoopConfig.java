@@ -62,7 +62,4 @@ public class LoopConfig {
         this.actualMusicNumber = actualMusicNumber;
     }
 
-    public void setI(Integer i) {
-        this.i = i;
-    }
 }

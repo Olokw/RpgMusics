@@ -45,21 +45,18 @@ public class ConfigLoader {
                     musicConfig.setTime(time1, time2);
                 }
 
-
-
-                if (RpgMusics.instance.getRegionManager().regions.contains(regionConfig)){
+                boolean added = false;
+                if (!RpgMusics.instance.getRegionManager().regions.isEmpty()){
                     for (RegionConfig regionConfig1 : RpgMusics.instance.getRegionManager().regions){
                         if (regionConfig1.getRegionName().equalsIgnoreCase(regionConfig.getRegionName()) && regionConfig1.getRegionWorld().equalsIgnoreCase(regionConfig.getRegionWorld())){
-                            regionConfig.addMusicConfig(musicConfig);
+                            regionConfig1.addMusicConfig(musicConfig);
+                            added = true;
                         }
                     }
-                }else{
+                }
+                if (!added){
                     regionConfig.addMusicConfig(musicConfig);
-                    if (regionConfig.getRegionName().equalsIgnoreCase("__global__")){
-                        RpgMusics.instance.getRegionManager().add(regionConfig);
-                    } else {
-                        RpgMusics.instance.getRegionManager().add(regionConfig);
-                    }
+                    RpgMusics.instance.getRegionManager().add(regionConfig);
                 }
             }
         }else{

@@ -11,7 +11,7 @@ import java.util.List;
 public class RegionConfig {
     private String regionName;
     private String regionWorld;
-    private List<MusicConfig> music = new ArrayList<>();
+    private final List<MusicConfig> music = new ArrayList<>();
 
     public void setRegionName(String regionName) {
         this.regionName = regionName;
