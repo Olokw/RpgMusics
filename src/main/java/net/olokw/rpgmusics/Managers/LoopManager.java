@@ -2,7 +2,9 @@ package net.olokw.rpgmusics.Managers;
 
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldguard.WorldGuard;
+import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
+import com.sk89q.worldguard.protection.regions.RegionContainer;
 import net.olokw.rpgmusics.RpgMusics;
 import net.olokw.rpgmusics.Utils.LoopConfig;
 import net.olokw.rpgmusics.Utils.MusicConfig;
@@ -42,7 +44,7 @@ public class LoopManager {
 
     }
 
-    public void justStartTimer(final Player player, final LoopConfig loopConfig, MusicConfig pickedMusicConfig, int actualNumber){
+    public void justStartTimer(Player player, LoopConfig loopConfig, MusicConfig pickedMusicConfig, int actualNumber){
         final String music = pickedMusicConfig.getMusicName();
         final float volume = pickedMusicConfig.getVolume();
         final float pitch = pickedMusicConfig.getPitch();
@@ -82,14 +84,11 @@ public class LoopManager {
                         int availableMusicsSize = loopConfig.getAvailableMusics(player.getWorld().getTime()).size();
                         int lastMusicNumber = loopConfig.getActualMusicNumber();
 
-                        // Gera um número aleatório diferente do último número selecionado
                         do {
                             randomNumber = new Random().nextInt(availableMusicsSize);
                         } while (randomNumber == lastMusicNumber);
 
-                        // Usar randomNumber como o próximo número selecionado
                     } else {
-                        // Caso haja apenas uma música disponível
                         randomNumber = 0;
                     }
 
@@ -117,14 +116,25 @@ public class LoopManager {
 
     private RegionConfig getAnyMusicRegion(Location loc){
         RegionConfig globalRegion = null;
-        for (ProtectedRegion region : WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(loc.getWorld())).getApplicableRegions(BukkitAdapter.asBlockVector(loc))){
+        ApplicableRegionSet regionSet = WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(loc.getWorld())).getApplicableRegions(BukkitAdapter.asBlockVector(loc));
+        if (regionSet.size() != 0){
+            for (ProtectedRegion region : regionSet){
+                for (RegionConfig regionConfig : RpgMusics.instance.getRegionManager().regions){
+                    if (regionConfig.getRegionWorld().equalsIgnoreCase(loc.getWorld().getName())){
+                        if (regionConfig.getRegionName().equalsIgnoreCase(region.getId())){
+                            return regionConfig;
+                        }
+                        if (regionConfig.getRegionName().equalsIgnoreCase("__global__")){
+                            globalRegion = regionConfig;
+                        }
+                    }
+                }
+            }
+        } else {
             for (RegionConfig regionConfig : RpgMusics.instance.getRegionManager().regions){
                 if (regionConfig.getRegionWorld().equalsIgnoreCase(loc.getWorld().getName())){
-                    if (regionConfig.getRegionName().equalsIgnoreCase(region.getId())){
-                        return regionConfig;
-                    }
                     if (regionConfig.getRegionName().equalsIgnoreCase("__global__")){
-                        globalRegion = regionConfig;
+                        return regionConfig;
                     }
                 }
             }

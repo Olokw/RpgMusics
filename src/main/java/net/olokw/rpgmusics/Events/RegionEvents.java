@@ -28,6 +28,8 @@ import java.util.HashSet;
 
 public class RegionEvents implements Listener {
 
+    // These below are the events for global region detection.
+
     @EventHandler
     public void onJoin(PlayerJoinEvent e) {
         if (getMusicRegion(e.getPlayer().getLocation()) == null){
@@ -39,6 +41,53 @@ public class RegionEvents implements Listener {
             }
         }
     }
+
+    @EventHandler
+    public void onRegionLeave(RegionLeaveEvent e) {
+        if (!e.getFrom().getWorld().getName().equalsIgnoreCase(e.getTo().getWorld().getName())) return;
+        if (getMusicRegion(e.getTo()) == null){
+            for (RegionConfig regionConfig : RpgMusics.instance.getRegionManager().regions){
+                if (regionConfig.getRegionName().equalsIgnoreCase("__global__") && regionConfig.getRegionWorld().equalsIgnoreCase(e.getPlayer().getWorld().getName())){
+                    tryPlayMusic(e.getPlayer(), regionConfig);
+                    break;
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void onTeleport(PlayerTeleportEvent e){
+        if (!e.getFrom().getWorld().getName().equalsIgnoreCase(e.getTo().getWorld().getName())) return;
+        if (getMusicRegion(e.getTo()) == null){
+            for (RegionConfig regionConfig : RpgMusics.instance.getRegionManager().regions){
+                if (regionConfig.getRegionName().equalsIgnoreCase("__global__") && regionConfig.getRegionWorld().equalsIgnoreCase(e.getPlayer().getWorld().getName())){
+                    tryPlayMusic(e.getPlayer(), regionConfig);
+                    break;
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void onWorldChange(PlayerChangedWorldEvent e){
+        if (RpgMusics.instance.getLoopManager().tasks.containsKey(e.getPlayer().getUniqueId())){
+            if (!RpgMusics.instance.getLoopManager().tasks.get(e.getPlayer().getUniqueId()).getBukkitTask().isCancelled()){
+                RpgMusics.instance.getLoopManager().stopTimer(e.getPlayer());
+            }
+            RpgMusics.instance.getLoopManager().tasks.remove(e.getPlayer().getUniqueId());
+        }
+
+        if (getMusicRegion(e.getPlayer().getLocation()) == null){
+            for (RegionConfig regionConfig : RpgMusics.instance.getRegionManager().regions){
+                if (regionConfig.getRegionName().equalsIgnoreCase("__global__") && regionConfig.getRegionWorld().equalsIgnoreCase(e.getPlayer().getWorld().getName())){
+                    tryPlayMusic(e.getPlayer(), regionConfig);
+                    break;
+                }
+            }
+        }
+    }
+
+    // This below is the event for normal region detection.
 
     @EventHandler
     public void onRegionEnter(RegionEnterEvent e) {
@@ -56,6 +105,8 @@ public class RegionEvents implements Listener {
             }
         }.runTaskLater(RpgMusics.instance, 1);
     }
+
+    // These below are the main methods.
 
     private void tryPlayMusic(Player p, RegionConfig regionConfig){
         new BukkitRunnable() {
@@ -91,26 +142,6 @@ public class RegionEvents implements Listener {
 
     }
 
-    @EventHandler
-    public void onLogout(PlayerQuitEvent e){
-        if (RpgMusics.instance.getLoopManager().tasks.containsKey(e.getPlayer().getUniqueId())){
-            if (!RpgMusics.instance.getLoopManager().tasks.get(e.getPlayer().getUniqueId()).getBukkitTask().isCancelled()){
-                RpgMusics.instance.getLoopManager().stopTimer(e.getPlayer());
-            }
-            RpgMusics.instance.getLoopManager().tasks.remove(e.getPlayer().getUniqueId());
-        }
-    }
-
-    @EventHandler
-    public void onWorldChange(PlayerChangedWorldEvent e){
-        if (RpgMusics.instance.getLoopManager().tasks.containsKey(e.getPlayer().getUniqueId())){
-            if (!RpgMusics.instance.getLoopManager().tasks.get(e.getPlayer().getUniqueId()).getBukkitTask().isCancelled()){
-                RpgMusics.instance.getLoopManager().stopTimer(e.getPlayer());
-            }
-            RpgMusics.instance.getLoopManager().tasks.remove(e.getPlayer().getUniqueId());
-        }
-    }
-
     private RegionConfig getMusicRegion(Location loc){
         for (ProtectedRegion region : WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(loc.getWorld())).getApplicableRegions(BukkitAdapter.asBlockVector(loc))){
             for (RegionConfig regionConfig : RpgMusics.instance.getRegionManager().regions){
@@ -122,28 +153,15 @@ public class RegionEvents implements Listener {
         return null;
     }
 
-    @EventHandler
-    public void onTeleport(PlayerTeleportEvent e){
-        if (!e.getFrom().getWorld().getName().equalsIgnoreCase(e.getTo().getWorld().getName())) return;
-        if (getMusicRegion(e.getTo()) == null){
-            for (RegionConfig regionConfig : RpgMusics.instance.getRegionManager().regions){
-                if (regionConfig.getRegionName().equalsIgnoreCase("__global__") && regionConfig.getRegionWorld().equalsIgnoreCase(e.getPlayer().getWorld().getName())){
-                    tryPlayMusic(e.getPlayer(), regionConfig);
-                    break;
-                }
-            }
-        }
-    }
+    // Extra event (for stopping player musics on logout)
 
     @EventHandler
-    public void onTeleport(PlayerChangedWorldEvent e){
-        if (getMusicRegion(e.getPlayer().getLocation()) == null){
-            for (RegionConfig regionConfig : RpgMusics.instance.getRegionManager().regions){
-                if (regionConfig.getRegionName().equalsIgnoreCase("__global__") && regionConfig.getRegionWorld().equalsIgnoreCase(e.getPlayer().getWorld().getName())){
-                    tryPlayMusic(e.getPlayer(), regionConfig);
-                    break;
-                }
+    public void onLogout(PlayerQuitEvent e){
+        if (RpgMusics.instance.getLoopManager().tasks.containsKey(e.getPlayer().getUniqueId())){
+            if (!RpgMusics.instance.getLoopManager().tasks.get(e.getPlayer().getUniqueId()).getBukkitTask().isCancelled()){
+                RpgMusics.instance.getLoopManager().stopTimer(e.getPlayer());
             }
+            RpgMusics.instance.getLoopManager().tasks.remove(e.getPlayer().getUniqueId());
         }
     }
 
