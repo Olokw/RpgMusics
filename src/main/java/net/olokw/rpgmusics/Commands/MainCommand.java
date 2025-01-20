@@ -18,9 +18,9 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                 if (!sender.isOp()) return true;
             }
             if (args[0].equalsIgnoreCase("reload")) {
-                sender.sendMessage("Recarregando plugin...");
+                sender.sendMessage("Reloading plugin...");
                 RpgMusics.instance.getConfigLoader().load();
-                sender.sendMessage("Recarregado!");
+                sender.sendMessage("Reloaded!");
             }
         }
 
