@@ -19,3 +19,5 @@ and WGRegionEvents (updated) from here: [CLICK HERE](https://www.spigotmc.org/re
 
 
 [![IMAGE ALT TEXT](https://cdn.discordapp.com/attachments/493448800250363944/1330322253736317109/image.png?ex=678d8ea5&is=678c3d25&hm=6be21dcfd07894ea7aa2f1928b4470c93dda1c2911c2a7d6c24eb949e6aa95e1&)](http://www.youtube.com/watch?v=y7-R1KZONE2Va0 "Plugin Showcase 2")
+
+Download link (for those who don't want or don't know how to compile the plugin): [CLICK HERE](https://builtbybit.com/resources/rpg-musics.58362/)
